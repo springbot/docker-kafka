@@ -11,6 +11,11 @@ IP=$(grep "\s${HOSTNAME}$" /etc/hosts | head -n 1 | awk '{print $1}')
 # string with multiple ZooKeeper hosts
 [ -z "$ZOOKEEPER_CONNECTION_STRING" ] && ZOOKEEPER_CONNECTION_STRING="${ZOOKEEPER_IP}:${ZOOKEEPER_PORT:-2181}"
 
+# Run hostname command if provided
+if [[ -z ${KAFKA_ADVERTISED_HOST_NAME} && -n ${HOSTNAME_COMMAND} ]]; then
+  KAFKA_ADVERTISED_HOST_NAME=$(eval $HOSTNAME_COMMAND)
+fi
+
 cat /kafka/config/server.properties.template | sed \
   -e "s|{{KAFKA_ADVERTISED_HOST_NAME}}|${KAFKA_ADVERTISED_HOST_NAME:-$IP}|g" \
   -e "s|{{KAFKA_ADVERTISED_PORT}}|${KAFKA_ADVERTISED_PORT:-9092}|g" \
@@ -51,6 +56,10 @@ if [ -z $KAFKA_JMX_OPTS ]; then
     KAFKA_JMX_OPTS="$KAFKA_JMX_OPTS -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME:-$KAFKA_ADVERTISED_HOST_NAME} "
     export KAFKA_JMX_OPTS
 fi
+
+ls -l /kafka
+
+echo `ls /kafka`
 
 echo "Starting kafka"
 exec /kafka/bin/kafka-server-start.sh /kafka/config/server.properties

@@ -15,6 +15,9 @@ ENV KAFKA_RELEASE_ARCHIVE kafka_${KAFKA_SCALA_VERSION}-${KAFKA_VERSION}.tgz
 
 RUN mkdir /kafka /data /logs
 
+COPY config /kafka/config
+COPY start.sh /start.sh
+
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates
@@ -33,9 +36,6 @@ RUN echo VERIFY CHECKSUM: && \
 # Install Kafka to /kafka
 RUN tar -zx -C /kafka --strip-components=1 -f ${KAFKA_RELEASE_ARCHIVE} && \
   rm -rf kafka_*
-
-ADD config /kafka/config
-ADD start.sh /start.sh
 
 # Set up a user to run Kafka
 RUN groupadd kafka && \
